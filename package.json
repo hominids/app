@@ -1,0 +1,37 @@
+{
+  "name": "hominid-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.2",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "@openzeppelin/contracts": "^4.2.0",
+    "axios": "^0.21.1",
+    "chai": "^4.3.4",
+    "ethereum-waffle": "^3.4.0",
+    "ethers": "^5.4.1",
+    "hardhat": "^2.4.1",
+    "ipfs-http-client": "^50.1.2",
+    "next": "11.0.1",
+    "node": "^16.9.1",
+    "pako": "^2.0.4",
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
+    "react-icons": "^4.2.0",
+    "react-multi-carousel": "^2.6.5",
+    "web3modal": "^1.9.3"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.2.6",
+    "eslint": "7.29.0",
+    "eslint-config-next": "11.0.1",
+    "postcss": "^8.3.5",
+    "tailwindcss": "^2.2.4"
+  }
+}
