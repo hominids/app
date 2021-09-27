@@ -8,9 +8,9 @@ To run this project locally, follow these steps.
 1. Clone the project locally, change into the directory, and install the dependencies:
 
 ```sh
-git clone https://github.com/dabit3/polygon-ethereum-nextjs-marketplace.git
+git clone https://github.com/hominids/app.git
 
-cd polygon-ethereum-nextjs-marketplace
+cd app
 
 # install using NPM or Yarn
 npm install
