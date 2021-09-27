@@ -1,30 +1,5 @@
-## Full stack NFT marketplace built with Polygon, Solidity, IPFS, & Next.js
+# Hominid App
 
-![Header](https://dev-to-uploads.s3.amazonaws.com/uploads/articles/pfofv47dooojerkmfgr4.png)
-
-### Running this project
-
-#### Gitpod
-
-To deploy this project to Gitpod, follow these steps:
-
-1. Click this link to deploy
-
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#github.com/dabit3/polygon-ethereum-nextjs-marketplace)
-
-2. In __pages/index.js__, pass in the RPC address given to you by GitPod to the call to `JsonRpcProvider` function:
-
-```javascript
-/* update this: */
-const provider = new ethers.providers.JsonRpcProvider()
-
-/* to this: */
-const provider = new ethers.providers.JsonRpcProvider("https://8545-youendpoint.gitpod.io/")
-```
-
-3. Import the RPC address given to you by GitPod into your MetaMask wallet
-
-![MetaMask RPC Import](wallet.png)
 
 #### Local setup
 
