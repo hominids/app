@@ -1,5 +1,4 @@
 # Hominid App
-<img width="1293" alt="Screen Shot 2021-09-27 at 4 38 58 AM" src="https://user-images.githubusercontent.com/62122206/134875236-dc709f24-e854-455c-8251-dd378fdd26a7.png">
 
 
 #### Local setup

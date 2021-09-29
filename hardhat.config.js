@@ -4,7 +4,7 @@ const privateKey = fs.readFileSync(".secret").toString().trim() || "012345678901
 // const infuraId = fs.readFileSync(".infuraid").toString().trim() || "";
 
 module.exports = {
-  defaultNetwork: "hardhat",
+  defaultNetwork: "habitat",
   networks: {
     hardhat: {
       chainId: 1337
@@ -13,6 +13,10 @@ module.exports = {
       url: "https://mainnet-habitat-l2.fly.dev/",
       accounts: [privateKey]
     },
+    mainnet: {
+      url: "https://mainnet.infura.io/v3/<your_infura_key>", // or any other JSON-RPC provider
+      accounts: [privateKey]
+  }
     /*
     mumbai: {
       // Infura

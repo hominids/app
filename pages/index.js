@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { inflateRaw } from './lib/pako.esm'
 import Carousel from 'react-multi-carousel'
 import "react-multi-carousel/lib/styles.css"
-//import Web3Modal from "web3modal"
+import { FaExternalLinkAlt } from "react-icons/fa";
 import {
   ROLLUP_ADDRESS
 } from '../config'
@@ -93,17 +93,112 @@ export const HABITAT_ROLLUP_ABI = [
     'function withdraw(address owner, address token, uint256 tokenId)'
 ];
 
+const TYPED_DATA = {
+  types: {
+    EIP712Domain: [
+      { name: 'name', type: 'string' },
+    ],
+    // Transactions that can be replayed need nonces.
+    // Other transaction types revert if replayed.
+    TransferToken: [
+      { name: 'nonce', 'type': 'uint256' },
+      { name: 'token', type: 'address' },
+      { name: 'to', type: 'address' },
+      { name: 'value', type: 'uint256' },
+    ],
+    ClaimUsername: [
+      { name: 'nonce', 'type': 'uint256' },
+      { name: 'shortString', type: 'bytes32' },
+    ],
+    CreateCommunity: [
+      { name: 'nonce', 'type': 'uint256' },
+      { name: 'governanceToken', type: 'address' },
+      { name: 'metadata', type: 'bytes' },
+    ],
+    CreateVault: [
+      { name: 'nonce', 'type': 'uint256' },
+      { name: 'communityId', type: 'bytes32' },
+      { name: 'condition', type: 'address' },
+      { name: 'metadata', type: 'bytes' },
+    ],
+    CreateProposal: [
+      { name: 'nonce', 'type': 'uint256' },
+      { name: 'startDate', 'type': 'uint256' },
+      { name: 'vault', type: 'address' },
+      { name: 'internalActions', type: 'bytes' },
+      { name: 'externalActions', type: 'bytes' },
+      { name: 'metadata', type: 'bytes' },
+    ],
+    VoteOnProposal: [
+      { name: 'nonce', 'type': 'uint256' },
+      { name: 'proposalId', type: 'bytes32' },
+      { name: 'shares', type: 'uint256' },
+      { name: 'delegatedFor', type: 'address' },
+      { name: 'signalStrength', type: 'uint8' },
+    ],
+    ProcessProposal: [
+      { name: 'nonce', 'type': 'uint256' },
+      { name: 'proposalId', type: 'bytes32' },
+      { name: 'internalActions', type: 'bytes' },
+      { name: 'externalActions', type: 'bytes' },
+    ],
+    TributeForOperator: [
+      { name: 'nonce', 'type': 'uint256' },
+      { name: 'operator', type: 'address' },
+      { name: 'token', type: 'address' },
+      { name: 'amount', type: 'uint256' },
+    ],
+    DelegateAmount: [
+      { name: 'nonce', 'type': 'uint256' },
+      { name: 'delegatee', type: 'address' },
+      { name: 'token', type: 'address' },
+      { name: 'value', type: 'uint256' },
+    ],
+    ClaimStakingReward: [
+      { name: 'nonce', 'type': 'uint256' },
+      { name: 'token', 'type': 'address' },
+      { name: 'sinceEpoch', 'type': 'uint256' },
+    ],
+    ModifyRollupStorage: [
+      { name: 'nonce', 'type': 'uint256' },
+      { name: 'data', 'type': 'bytes' },
+    ],
+    CreateVirtualERC20: [
+      { name: 'nonce', 'type': 'uint256' },
+      { name: 'factoryAddress', 'type': 'address' },
+      { name: 'args', 'type': 'bytes' },
+    ],
+  },
+  domain: {
+    name: 'Habitat V1',
+  },
+  primaryTypes: [
+    'TransferToken',
+    'ClaimUsername',
+    'CreateCommunity',
+    'CreateVault',
+    'CreateProposal',
+    'VoteOnProposal',
+    'ProcessProposal',
+    'TributeForOperator',
+    'DelegateAmount',
+    'ClaimStakingReward',
+    'ModifyRollupStorage',
+    'CreateVirtualERC20',
+  ],
+};
 
 
 const ROLLUP_RPC = 'https://mainnet-habitat-l2.fly.dev/';
+const EVOLUTION_ENDPOINT = 'https://habitat-evolution.fly.dev/submitTransaction/';
 
 export default function Home() {
   const [proposals, setProposals] = useState([])
   // const [maxVotes, setMaxVotes] = useState()
   const [loadingState, setLoadingState] = useState('not-loaded')
   useEffect(() => {
-    //loadProposals()
     loadProposals()
+    // dummyData()
   }, [])
 
   async function decodeMetadata (str) {
@@ -114,13 +209,13 @@ export default function Home() {
       return {};
     }
   };
+
   async function loadProposals() {    
     const rollupProvider = new ethers.providers.JsonRpcProvider(ROLLUP_RPC, 'any');
     const rollup = new ethers.Contract(ROLLUP_ADDRESS, HABITAT_ROLLUP_ABI, rollupProvider);
     const filter = rollup.filters.ProposalCreated([TREASURY_ADDRESS], null, null);
     filter.fromBlock = 1;
     const data = await rollup.provider.getLogs(filter);
-
     //iterate over data
     const items = await Promise.all(data.map(async i => {
       //get proposalId from 3rd item in "topics"
@@ -150,7 +245,41 @@ export default function Home() {
     setLoadingState('loaded')
   }
 
-    /*
+  async function sendTransaction (proposalId) {
+    const primaryType = 'VoteOnProposal';
+    const rollupProvider = new ethers.providers.JsonRpcProvider(ROLLUP_RPC, 'any');
+    const rollup = new ethers.Contract(ROLLUP_ADDRESS, HABITAT_ROLLUP_ABI, rollupProvider);
+    const provider = new ethers.providers.Web3Provider(window.ethereum)
+    const signer = provider.getSigner()
+    const signerAddress = await signer.getAddress();
+    const message = {nonce: ((await rollup.callStatic.txNonces(signerAddress)).toHexString()), proposalId: proposalId, shares: ethers.utils.parseUnits('1.0', 10).toHexString(), delegatedFor: ethers.constants.AddressZero, signalStrength: 100};
+    const tx = Object.assign({ message, primaryType }, TYPED_DATA);
+    const sig = await signer.provider.send('eth_signTypedData_v4', [signerAddress, JSON.stringify(tx)]);
+    const { r, s, v } = ethers.utils.splitSignature(sig);
+    const operatorMessage = await ethers.utils.fetchJson(EVOLUTION_ENDPOINT, JSON.stringify({ primaryType, message, r, s, v }));
+    if (operatorMessage.error) {
+      throw new Error(operatorMessage.error.message);
+    }
+    const txHash = operatorMessage.result;
+    const receipt = await rollup.provider.getTransactionReceipt(txHash);
+    console.log({ receipt });
+    if (receipt.status === 0) {
+      throw new Error('transaction reverted');
+    }
+    // convenience
+    receipt.events = [];
+    for (const obj of receipt.logs) {
+      try {
+        receipt.events.push(Object.assign({ transactionHash: obj.transactionHash }, rollup.interface.parseLog(obj)));
+      } catch (e) {
+        console.warn(e);
+      }
+    }
+    loadProposals();
+    return receipt;
+  }
+
+/*
   async function dummyData() {  
       let items = [{
         proposalId: "asdlfkj",
@@ -186,35 +315,49 @@ export default function Home() {
         slidesToSlide={1}
         infinite={true}
         draggable={true}
-        itemClass="flex justify-center p-6"
+        itemClass="flex justify-center p-4"
         containerClass="flex w-screen"
         sliderClass=""
         showDots={false}
       >
           {
             proposals.map((proposal, i) => (
-              <div key={i} className="relative border shadow rounded-3xl overflow-hidden bg-white h-96">
-                <div className="p-4">
-                  <p style={{ height: '64px' }} className="text-2xl font-semibold border-b overflow-hidden">{proposal.title}</p>
-                  <div className="h-60 overflow-auto" dangerouslySetInnerHTML={{__html: proposal.body}}>
+              <div key={i} className="relative border shadow rounded-3xl overflow-hidden bg-white w-full h-96">
+                <div className="flex flex-col p-4">
+                  <div className="border-b flex justify-between">
+                    <p style={{ height: '64px' }} className="text-2xl font-semibold overflow-hidden">{proposal.title}</p>
+                    <a href={`https://0xhabitat.org/app/#habitat-proposal,${proposal.txHash}`} className="p-2">
+                      <FaExternalLinkAlt className="text-gray-300"/>
+                    </a>
+                  </div>
+                  <div className="h-60 overflow-auto py-2" dangerouslySetInnerHTML={{__html: proposal.body}}>
                   </div>
                 </div>
 
-                <div className="absolute bottom-0 w-full flex p-4 bg-black justify-evenly space-x-4">
-                  <div className="flex flex-wrap content-end">
-                    <p className="text-2xl mb-2 ml-1 font-semibold text-white">{proposal.votes} HBT</p>
-                  </div>
-                  <div className="flex-wrap max-h-28 text-right">
-                    <button className="bg-blue-600 border-2 border-blue-600 text-white rounded-full w-24 h-12 py-2 px-2 m-1 hover:shadow-2xl hover:ring-1 hover:ring-blue-600 transition duration-300 font-bold">
-                      <a href={`https://0xhabitat.org/app/#habitat-proposal,${proposal.txHash}`}>
-                        Vote
-                      </a>
-                    </button>
-                    <button className="text-sm text-blue-600 border-2 border-blue-600 rounded-full bg-transparent w-24 h-12 py-2 px-2 m-1 hover:bg-blue-600 hover:text-white transition duration-100 font-semibold">
-                      <a href={`${proposal.github}`}>
-                        Discuss
-                      </a>
-                    </button>
+                <div className="absolute bottom-0 w-full bg-black p-2">
+                  <div className="flex justify-between ">
+                    <div className="flex items-center">
+
+                      <div className="fixed flex-shrink truncate p-3">
+                        <p className="truncate ... text-2xl font-semibold text-white">{proposal.votes} HBT</p>
+                      </div>
+                    </div>
+                    <div className="sticky flex-shrink-0">
+                      <div className="flex flex-row-reverse items-stretch">
+                      <div className="bg-black">
+                        <button className="bg-blue-600 border-2 border-blue-600 text-white rounded-full w-24 h-12 py-2 px-2 m-1 hover:shadow-2xl hover:ring-1 hover:ring-blue-600 transition duration-300 font-bold" onClick={() => sendTransaction(proposal.proposalId)}>
+                            Vote
+                        </button>
+                        <button className="text-sm text-blue-600 border-2 border-blue-600 rounded-full bg-transparent w-24 h-12 py-2 px-2 m-1 hover:bg-blue-600 hover:text-white transition duration-100 font-semibold">
+                          <a href={`${proposal.github}`}>
+                            Discuss
+                          </a>
+                        </button>
+                      </div>
+                      <div className="bg-gradient-to-r from-transparent to-black w-10">
+                      </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
