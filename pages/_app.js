@@ -1,20 +1,29 @@
+import React, { useState, useEffect } from 'react';
 import '../styles/globals.css'
 import Link from 'next/link'
 import {useRouter} from 'next/router'
+import Navbar from '../src/components/Navbar'
+
 
 function Dashboard({ Component, pageProps }) {
-  const router = useRouter()
+  const router = useRouter();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    // Naive check for mobile
+    setIsMobile(
+      navigator.userAgent.match(
+        /(iPad)|(iPhone)|(iPod)|(android)|(webOS)/i
+      )
+    )
+  }, []);
   
   return (
   <div className="">
     <div className="bg-white g-cover bg-opacity-80">
-      <nav className=" p-6 border-b border-white">
-        <img 
-          src='hominid-logotype.svg' 
-          className="mb-5 -ml-4 cursor-pointer"
-          width={250}
-        />
-        <div className="flex mt-4">
+      <nav className=" p-4 border-b border-white">
+        <Navbar />
+        <div className="flex m-5">
           <Link href="/">
             <a className={router.pathname === '/' ? "nav-link-active" : "nav-link"}>
               Dashboard
@@ -27,7 +36,10 @@ function Dashboard({ Component, pageProps }) {
           </Link>
         </div>
       </nav>
-      <Component {...pageProps} />
+      <Component 
+      {...pageProps}
+      isMobile={isMobile}
+       />
     </div>
   </div>
   )

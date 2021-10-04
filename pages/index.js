@@ -7,6 +7,7 @@ import { FaExternalLinkAlt } from "react-icons/fa";
 import {
   ROLLUP_ADDRESS
 } from '../config'
+import Navbar from '../src/components/Navbar'
 
 const TREASURY_ADDRESS = '0x7ce1af84F3d83305315aE460B6F18C011F0b268e';
 const GITHUB_ISSUES_PAGE = "https://github.com/hominids/Improvements-FeatureFarm/issues";

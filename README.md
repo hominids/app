@@ -1,5 +1,7 @@
 # Hominid App
 
+V0 Demo: https://odysee.com/@Hominid:f/Gitcoin-Hackathon-Round-11--Habitat-Rollup:4 
+
 
 #### Local setup
 
